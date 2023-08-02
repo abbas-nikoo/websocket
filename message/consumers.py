@@ -40,6 +40,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def chat_message(self, event):
+        
         message = event['message']
 
         # ارسال پیام به کلاینت‌ها

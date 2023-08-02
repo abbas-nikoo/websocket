@@ -19,23 +19,6 @@ def user_registration_view(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-# @api_view(['POST'])
-# def login_user(request):
-#     if request.method == 'POST':
-#         serializer = LoginUserSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         username = serializer.validated_data['username']
-#         password = serializer.validated_data['password']
-#         user = User.objects.get(username=username, password=password)
-#
-#         refresh = RefreshToken.for_user(user)
-#         response_data = {
-#             'access_token': str(refresh.access_token),
-#             'refresh_token': str(refresh)
-#         }
-#
-#         return Response(data=response_data, status=status.HTTP_200_OK)
-
 
 @api_view(['POST'])
 def login_user(request):
