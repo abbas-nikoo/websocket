@@ -42,35 +42,21 @@ def login_user(request):
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_chat(request):
-    current_user = request.user
-    title = request.data.get('group_name')
-    if title:
-        chat = GroupChat.objects.create(creator=current_user, title=title)
-        # member = Member.objects.create(chat=chat, user=current_user)
-        serializer = GroupChatSerializer(chat)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    else:
-        return Response({'detail': 'Please provide a group name'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@api_view(['GET', 'POST'])
 def chat(request, chat_id):
     current_user = request.user
     chat = get_object_or_404(GroupChat, unique_code=chat_id)
 
     if request.method == "GET":
         if not Member.objects.filter(chat=chat, user=current_user).exists():
-            return Response({'detail': 'you are not member of this chat'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'detail': 'You are not a member of this chat'}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = GroupChatSerializer(chat)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == "POST":
         if Member.objects.filter(chat=chat, user=current_user).exists():
-            return Response({'detail': 'You are already a member of this chat'}, status=400)
+            return Response({'detail': 'You are already a member of this chat'}, status=status.HTTP_400_BAD_REQUEST)
 
         member = Member(chat=chat, user=current_user)
         member.save()
@@ -83,26 +69,37 @@ def chat(request, chat_id):
                 'message': json.dumps({'type': "join", 'username': current_user.username})
             }
         )
+
         serializer = GroupChatSerializer(chat)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def get_messages(request, group_name):
-#     messages = ChatMessage.objects.filter(group__group_name=group_name).order_by('timestamp')
-#     data = [{'sender': msg.sender, 'message': msg.message} for msg in messages]
-#     return Response(data)
 
+@api_view(['POST'])
+def leave_chat(request, chat_id):
+    current_user = request.user
+    chat = get_object_or_404(GroupChat, unique_code=chat_id)
 
-# @api_view(['POST'])
-# def send_message(request, group_name):
-#     sender = request.user
-#     message = request.data.get('message', '')
+    if chat.creator == current_user:
+        chat.delete()
 
-#     if sender and message:
-#         # ذخیره پیام در پایگاه داده
-#         group, created = GroupChat.objects.get_or_create(group_name=group_name)
-#         ChatMessage.objects.create(group=group, sender=sender, message=message)
-#         return Response({'status': 'success'})
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"chat_{chat.unique_code}",
+            {
+                'type': 'chat_activity',
+                'message': json.dumps({'type': "delete"})
+            }
+        )
+    else:
+        Member.objects.filter(chat=chat, user=current_user).delete()
 
-#     return Response({'status': 'error', 'message': 'Sender and message fields are required.'})
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"chat_{chat.unique_code}",
+            {
+                'type': 'chat_activity',
+                'message': json.dumps({'type': "leave", 'username': current_user.username})
+            }
+        )
+
+    return Response({'detail': 'You have left the chat'}, status=status.HTTP_200_OK)

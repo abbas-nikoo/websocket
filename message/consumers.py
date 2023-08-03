@@ -1,25 +1,29 @@
+# chat/consumers.py
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import GroupChat
+from channels.db import database_sync_to_async
+from .models import GroupChat, Member
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.group_name = self.scope['url_route']['kwargs']['group_name']
-        self.group = await self.get_or_create_group(self.group_name)
+        self.chat_id = self.scope['url_route']['kwargs']['chat_id']
+        self.chat_group_name = f"chat_{self.chat_id}"
 
-        # اتصال به گروه
-        await self.channel_layer.group_add(
-            self.group_name,
-            self.channel_name
-        )
+        # اعتبارسنجی کاربر و اضافه کردن او به گروه چت
+        user = self.scope["user"]
+        if await self.is_member_of_chat(user):
+            await self.channel_layer.group_add(
+                self.chat_group_name,
+                self.channel_name
+            )
+            await self.accept()
+        else:
+            await self.close()
 
-        await self.accept()
-        print("#######@@!#$")
     async def disconnect(self, close_code):
-        # قطع اتصال از گروه
         await self.channel_layer.group_discard(
-            self.group_name,
+            self.chat_group_name,
             self.channel_name
         )
 
@@ -27,33 +31,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         message = data['message']
 
-        # ذخیره پیام در پایگاه داده
-        await self.save_message(self.group, self.scope['user'].username, message)
-
-        # ارسال پیام به گروه
         await self.channel_layer.group_send(
-            self.group_name,
+            self.chat_group_name,
             {
                 'type': 'chat_message',
-                'message': message,
+                'message': message
             }
         )
 
     async def chat_message(self, event):
-        
         message = event['message']
 
-        # ارسال پیام به کلاینت‌ها
         await self.send(text_data=json.dumps({
-            'message': message,
+            'message': message
         }))
 
-    @staticmethod
-    async def get_or_create_group(group_name):
-        group, created = await GroupChat.objects.get_or_create(group_name=group_name)
-        return group
-
-    @staticmethod
-    async def save_message(group, sender, message):
-        chat_message = ChatMessage(group=group, sender=sender, message=message)
-        await chat_message.save()
+    @database_sync_to_async
+    def is_member_of_chat(self, user):
+        return Member.objects.filter(chat__unique_code=self.chat_id, user=user).exists()
