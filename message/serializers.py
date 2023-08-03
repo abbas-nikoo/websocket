@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from .models import GroupChat, Member
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    email = serializers.EmailField()
 
     class Meta:
         model = User
@@ -17,3 +18,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
+class GroupChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupChat
+        fields = '__all__'
+
+
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = '__all__'

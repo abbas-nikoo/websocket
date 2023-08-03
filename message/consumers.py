@@ -1,6 +1,6 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import GroupChat, ChatMessage
+from .models import GroupChat
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
