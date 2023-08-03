@@ -42,6 +42,21 @@ def login_user(request):
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_chat(request):
+    current_user = request.user
+    title = request.data.get('group_name')
+    if title:
+        chat = GroupChat.objects.create(creator=current_user, title=title)
+        # member = Member.objects.create(chat=chat, user=current_user)
+        serializer = GroupChatSerializer(chat)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'detail': 'Please provide a group name'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 @api_view(['GET', 'POST'])
 def chat(request, chat_id):
     current_user = request.user
