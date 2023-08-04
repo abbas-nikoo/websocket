@@ -8,7 +8,7 @@ def UniqueGenerator(length=10):
     source = "abcdefghijklmnopqrztuvwxyz"
     result = ""
     for _ in range(length):
-        result += source[random.randint(0, length)]
+        result += source[random.randint(0, len(source)-1)]
     return result
 
 class GroupChat(models.Model):
