@@ -1,7 +1,8 @@
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from .models import GroupChat, Member
+from channels.generic.websocket import AsyncWebsocketConsumer
+from django.contrib.auth.models import AnonymousUser
+from .models import Message, GroupChat, Member
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -9,7 +10,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.chat_id = self.scope['url_route']['kwargs']['chat_id']
         self.chat_group_name = f"chat_{self.chat_id}"
 
-        # اعتبارسنجی کاربر و اضافه کردن او به گروه چت
+        # Validate the user and add them to the chat group
         user = self.scope["user"]
         if await self.is_member_of_chat(user):
             await self.channel_layer.group_add(

@@ -15,6 +15,16 @@ import json
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def chat_page(request):
+    user = request.user
+    host = "your_host_information_here"  # Replace this with the actual host information
+
+    # Pass the user and host information to the template
+    return render(request, 'chat_template.html', {'user': user, 'host': host})
+
+
+@api_view(['POST'])
 def user_registration_view(request):
     if request.method == 'POST':
         serializer = UserRegistrationSerializer(data=request.data)
@@ -49,7 +59,7 @@ def create_chat(request):
     title = request.data.get('group_name')
     if title:
         chat = GroupChat.objects.create(creator=current_user, title=title)
-        # member = Member.objects.create(chat=chat, user=current_user)
+        member = Member.objects.create(chat=chat, user=current_user)
         serializer = GroupChatSerializer(chat)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
@@ -58,6 +68,7 @@ def create_chat(request):
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def chat(request, chat_id):
     current_user = request.user
     chat = get_object_or_404(GroupChat, unique_code=chat_id)
