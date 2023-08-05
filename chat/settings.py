@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -46,7 +47,6 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'rest_framework_simplejwt',
-
 ]
 
 MIDDLEWARE = [
