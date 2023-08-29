@@ -7,6 +7,7 @@ class GroupChat(models.Model):
 
 class ChatMessage(models.Model):
     group = models.ForeignKey(GroupChat, on_delete=models.CASCADE)
-    sender = models.CharField(max_length=255)
+    session_key = models.CharField(max_length=255)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[('connected', 'Connected'), ('disconnected', 'Disconnected')], default='')
