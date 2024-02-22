@@ -1,5 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*__pychache__
+*__pychache__/
 *.py[cod]
 *$py.class
 
@@ -130,6 +132,8 @@ dmypy.json
 .idea
 *.idea
 .idea/
+
+media/
 *__pycache__/
 *__pycache__
 media
