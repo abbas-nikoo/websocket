@@ -130,3 +130,8 @@ dmypy.json
 .idea
 *.idea
 .idea/
+*__pycache__/
+*__pycache__
+media
+.idea
+.idea/
