@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'django.contrib.gis',
+    # 'geoip2',
     'message',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -155,3 +157,17 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
 }
+
+# GDAL_LIBRARY_PATH = '/usr/lib/libgdal.so.30'
+# # GEOIP_PATH = '/home/meysam/webinar/websocket/db.sqlite3'
+#
+# # settings.py
+#
+# # تنظیم مسیر پوشه حاوی داده‌های GeoIP2 (مسیر واقعی خود را جایگزین کنید)
+# GEOIP_PATH = '/usr/local/lib/python3.10/dist-packages/jedi/third_party/typeshed/third_party/2and3'
+#
+# # تنظیم مسیر و نام فایل MaxMind DB مورد نیاز (مثال: GeoLite2-Country.mmdb)
+# GEOIP_COUNTRY = 'GeoLite2-Country.mmdb'
+#
+# # تنظیم نحوه استفاده از GeoIP2 در Django
+# GEOIP2_PROVIDER = 'django.contrib.gis.geoip2.providers.GeoIP2Provider'
